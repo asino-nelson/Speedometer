@@ -1,5 +1,6 @@
 package com.example.speedometer
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -7,6 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -20,16 +24,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 @Composable
 fun SpeedometerScreen(){
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    val coroutineScope = rememberCoroutineScope()
+    val animation = remember { Animatable(0f) }
+    val maxSpeed = remember { mutableStateOf(0f) }
 
+    maxSpeed.value = max(maxSpeed.value, animation.value * 100f)
+
+    SpeedometerScreen(state = animation.toUiState(maxSpeed.value)){
+        coroutineScope.launch {
+            maxSpeed.value = 0f
+            startAnimation(animation)
+        }
     }
-
 }
+
+suspend fun startAnimation(animation: Animatable<Float, AnimationVector1D>){
+    animation.animateTo(0.84f, keyframes {
+        durationMillis = 900
+        0f at 0 with CubicBezierEasing(0f,1.5f,0.8f,1f)
+        0.72f at 1000 with CubicBezierEasing(0.2f,-1.5f,0f,1f)
+        0.76f at 2000 with CubicBezierEasing(0.2f,-2f,0f,1f)
+        0.78f at 3000 with CubicBezierEasing(0.2f,-1.5f,0f,1f)
+        0.82f at 4000 with CubicBezierEasing(0.2f,-2f,0f,1f)
+        0.85f at 5000 with CubicBezierEasing(0.2f,-2f,0f,1f)
+        0.89f at 6000 with CubicBezierEasing(0.2f,-1.2f,0f,1f)
+        0.82f at 7500 with LinearOutSlowInEasing
+    })
+}
+
+fun Animatable<Float, AnimationVector1D>.toUiState(maxSpeed: Float) = UiState(
+    actValue = value,
+    speed = "%.1f".format(value*100) ,
+    ping = if (value > 0.2f) "${(value*15).roundToInt()} ms" else "-",
+    maxSpeed = if (maxSpeed > 0f) "%.1f mbps".format(maxSpeed) else "-",
+    inProgress = isRunning
+)
 
 @Composable
 private fun SpeedometerScreen(state: UiState,onClick:() -> Unit){
@@ -55,7 +92,7 @@ fun SpeedIndicator(state: UiState,onClick:() -> Unit){
             .aspectRatio(1f)
     ){
         CircularSpeedIndicator(state.actValue,240f)
-        StartButton(isEnabled = state.inProgress, onClick)
+        StartButton( !state.inProgress, onClick)
         SpeedValue(value = state.speed)
     }
 }
@@ -208,7 +245,7 @@ fun NavigationView() {
 
     val selectedItem = 2
 
-    BottomNavigation() {
+    BottomNavigation(backgroundColor = Color.DarkGray) {
         items.mapIndexed { index, item ->
             BottomNavigationItem(
                 selected = index == selectedItem,
