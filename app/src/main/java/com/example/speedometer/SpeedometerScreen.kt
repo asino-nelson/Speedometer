@@ -111,7 +111,7 @@ fun SpeedValue(value:String){
             fontSize = 45.sp,
             fontWeight = FontWeight.Bold
         )
-        Text(text = "DOWNLOAD", style = MaterialTheme.typography.caption)
+        Text(text = "mbps", style = MaterialTheme.typography.caption)
     }
 }
 
