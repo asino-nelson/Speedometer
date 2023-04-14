@@ -179,7 +179,7 @@ fun DrawScope.drawArcs(progress:Float,maxValue:Float){
 
     fun drawGradient(){
         drawArc(
-            color = Color.Blue,
+            color = Color.Green,
             startAngle = startAngle,
             sweepAngle = sweepAngle,
             useCenter = false,
@@ -281,7 +281,8 @@ fun StartButton(isEnabled:Boolean, onClick:()-> Unit){
         Text(
             text = "START",
             modifier = Modifier
-                .padding(horizontal = 24.dp, vertical = 4.dp)
+                .padding(horizontal = 24.dp, vertical = 4.dp),
+            color = Color.Green
         )
     }
 }
